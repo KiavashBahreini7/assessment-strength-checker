@@ -225,7 +225,7 @@ Any use, adaptation, presentation, or publication referencing this tool must inc
 
 APA 7th Edition:
 
-Bahreini, K. (2026). Assessment Strength Checker: An AI-powered tool for evaluating assignment resistance to generative AI (Version 1.0) [Software]. Knight Foundation School of Computing and Information Sciences, Florida International University. kbahrein@fiu.edu https://doi.org/10.5281/zenodo.XXXXXXX
+Bahreini, K. (2026). Assessment Strength Checker: An AI-powered tool for evaluating assignment resistance to generative AI (Version 1.0) [Software]. Knight Foundation School of Computing and Information Sciences, Florida International University. kbahrein@fiu.edu https://doi.org/10.5281/zenodo.19043113
 
 BibTeX:
 
@@ -236,13 +236,13 @@ BibTeX:
   version     = {1.0},
   institution = {KFSCIS, Florida International University},
   email       = {kbahrein@fiu.edu},
-  url         = {https://doi.org/10.5281/zenodo.XXXXXXX},
+  url         = {https://doi.org/10.5281/zenodo.19043113},
   license     = {CC BY 4.0}
 }
 
 Chicago:
 
-Bahreini, Kiavash. 2026. Assessment Strength Checker. Version 1.0. Software. Knight Foundation School of Computing and Information Sciences, Florida International University. https://doi.org/10.5281/zenodo.XXXXXXX
+Bahreini, Kiavash. 2026. Assessment Strength Checker. Version 1.0. Software. Knight Foundation School of Computing and Information Sciences, Florida International University. https://doi.org/10.5281/zenodo.19043113
 
 ---
 
