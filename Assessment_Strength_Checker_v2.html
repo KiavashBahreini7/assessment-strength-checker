@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Assessment Strength Checker v2 · FIU</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap');
+:root{--a1:#B8860B;--a2:#C9951A;--a3:#F5C842;--ap:#FFFBEB;--ab:#FDE68A;--s2:rgba(184,134,11,.35);--s3:rgba(184,134,11,.45);--s4:rgba(184,134,11,.22);--ag:rgba(201,149,26,.15);--bg:#F7F9FC;--navy:#1A3A6B;--nm:#2A52A0;--nl:#4A7CC9;--np:#EBF0FA;--bdr:#D0D9E8;--grn:#1A7A4A;--gb:#E8F5EE;--gr:#A8D8BC;--amb:#7A5200;--ab2:#FFF4E0;--ar:#F0C060;--red:#8B1A1A;--rb:#FEF0F0;--rr:#F0AAAA;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);min-height:100vh;font-size:16px;line-height:1.6}
+/* Theme bar */
+.tbar{background:#0F1923;padding:.55rem 1.6rem;display:flex;align-items:center;gap:.9rem;flex-wrap:wrap;border-bottom:1px solid rgba(255,255,255,.08)}
+.tlbl{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.45);flex-shrink:0}
+.swts{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+.swt{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;transition:all .2s;flex-shrink:0}
+.swt:hover{transform:scale(1.25)}
+.swt.on{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.4)}
+.tnm{font-size:.74rem;font-weight:600;color:rgba(255,255,255,.6);font-style:italic}
+/* API bar */
+.abar{background:var(--navy);padding:.85rem 1.6rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.albl{font-size:.8rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#fff;white-space:nowrap;flex-shrink:0}
+.kwrp{position:relative;flex:1;min-width:240px}
+.kwrp input{width:100%;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.32);border-radius:7px;padding:.48rem 2.6rem .48rem .85rem;color:#fff;font-family:monospace;font-size:.92rem;outline:none}
+.kwrp input::placeholder{color:rgba(255,255,255,.4)}
+.kwrp input:focus{border-color:#fff;background:rgba(255,255,255,.18)}
+.eyb{position:absolute;right:.65rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:.95rem;color:rgba(255,255,255,.55)}
+.ahnt{font-size:.8rem;color:rgba(255,255,255,.65);line-height:1.5}
+.ahnt a{color:#fff;font-weight:600;text-decoration:none}
+.ahnt a:hover{text-decoration:underline}
+/* Header */
+header{background:#fff;border-bottom:4px solid transparent;border-image:linear-gradient(90deg,var(--a1),var(--a2),var(--a3),var(--nm)) 1;padding:2rem 2rem 1.8rem;text-align:center}
+.bdg{display:inline-block;background:linear-gradient(90deg,var(--a1),var(--a2));color:#fff;font-size:.7rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:.3rem 1rem;border-radius:20px;margin-bottom:.9rem;box-shadow:0 2px 10px var(--ag)}
+.htitle{font-family:'Playfair Display',serif;font-size:clamp(1.9rem,5vw,2.9rem);font-weight:900;line-height:1.1;margin-bottom:.45rem;color:#0F1923}
+.htitle .hs{background:linear-gradient(90deg,var(--a1),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:inline-block}
+.hsub{color:#5A6E85;font-size:1rem;max-width:520px;margin:0 auto}
+.vbadge{display:inline-block;background:rgba(26,58,107,.08);color:var(--nm);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.2rem .7rem;border-radius:10px;margin-top:.5rem;border:1px solid var(--bdr)}
+/* Layout */
+main{max-width:880px;margin:0 auto;padding:1.8rem 1.4rem 4rem}
+.card{background:#fff;border:1px solid var(--bdr);border-top:3px solid var(--a2);border-radius:14px;padding:1.7rem 1.9rem;margin-bottom:1.3rem;box-shadow:0 2px 12px rgba(26,58,107,.07)}
+.slbl{display:block;font-size:.76rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#1A2535;margin-bottom:.65rem}
+textarea{width:100%;min-height:135px;background:#fff;border:1.5px solid var(--bdr);border-radius:10px;padding:.95rem 1rem;color:#1A2535;font-family:'Inter',sans-serif;font-size:1rem;line-height:1.6;resize:vertical;outline:none;transition:border-color .2s,box-shadow .2s}
+textarea::placeholder{color:#A0B0C4}
+textarea:focus{border-color:var(--a2);box-shadow:0 0 0 3px var(--ag);background:#fff}
+/* Chips */
+.chips{display:flex;gap:.45rem;flex-wrap:wrap;margin-top:.75rem}
+.chip{background:var(--ap);border:1px solid var(--ab);border-radius:20px;padding:.35rem .85rem;font-size:.83rem;font-weight:600;color:#1A2535;cursor:pointer;user-select:none;transition:all .15s}
+.chip:hover{background:linear-gradient(90deg,var(--a1),var(--a2));color:#fff;border-color:var(--a1)}
+/* Field selector */
+.disc-wrap{margin-top:1.2rem}
+.field-row{display:flex;gap:.45rem;flex-wrap:wrap;margin-top:.6rem}
+.fbtn{background:#fff;border:1.5px solid var(--bdr);border-radius:8px;padding:.38rem .9rem;font-size:.86rem;font-weight:500;color:#5A6E85;cursor:pointer;user-select:none;transition:all .15s}
+.fbtn:hover{border-color:var(--a2);color:var(--a1);background:var(--ap)}
+.fbtn.on{background:linear-gradient(90deg,var(--a1),var(--a2));color:#fff;border-color:var(--a1)}
+.spec-wrap{margin-top:.8rem;display:none}
+.spec-wrap.show{display:block}
+.spec-row{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.5rem}
+.sbtn{background:#fff;border:1px solid var(--bdr);border-radius:20px;padding:.28rem .75rem;font-size:.8rem;font-weight:500;color:#5A6E85;cursor:pointer;user-select:none;transition:all .15s}
+.sbtn:hover{border-color:var(--nl);color:var(--nm);background:var(--np)}
+.sbtn.on{background:var(--nm);color:#fff;border-color:var(--nm)}
+.sel-display{margin-top:.6rem;font-size:.82rem;color:var(--nm);font-weight:600;min-height:1.2rem}
+/* Analyze button */
+.abtn{width:100%;margin-top:1.4rem;padding:.95rem 1.4rem;background:linear-gradient(90deg,var(--a1),var(--a2),var(--a3));color:#fff;border:none;border-radius:10px;font-family:'Inter',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 18px var(--s2);display:flex;align-items:center;justify-content:center;gap:.55rem;background-size:200% auto}
+.abtn:hover{background-position:right center;transform:translateY(-2px);box-shadow:0 8px 26px var(--s3)}
+.abtn:active{transform:translateY(0)}
+.abtn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.spn{display:none;width:19px;height:19px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+.ld .spn{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ebox{display:none;margin-top:.9rem;background:var(--rb);border:1px solid var(--rr);border-radius:8px;padding:.8rem .95rem;color:var(--red);font-size:.92rem;font-weight:500}
+.ebox.on{display:block}
+/* Results */
+#res{display:none}
+#res.on{display:block;animation:rise .35s ease}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.hero{display:flex;align-items:center;gap:1.9rem;flex-wrap:wrap}
+.ring{position:relative;width:118px;height:118px;flex-shrink:0}
+.ring svg{transform:rotate(-90deg)}
+.rbg{fill:none;stroke:var(--bdr);stroke-width:9}
+.rfil{fill:none;stroke-width:9;stroke-linecap:round;transition:stroke-dashoffset 1.2s ease}
+.rnum{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.rn{font-family:'Playfair Display',serif;font-size:2.3rem;font-weight:900;line-height:1;color:#0F1923}
+.rd{font-size:.78rem;color:#5A6E85;font-weight:500}
+.smeta h2{font-family:'Playfair Display',serif;font-size:1.45rem;color:#0F1923;margin-bottom:.38rem}
+.smeta p{color:#5A6E85;font-size:.97rem;line-height:1.6;max-width:490px}
+.vpil{display:inline-block;font-size:.74rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:.28rem .85rem;border-radius:20px;margin-bottom:.6rem}
+.vh{background:var(--gb);color:var(--grn);border:1px solid var(--gr)}
+.vm{background:var(--ab2);color:var(--amb);border:1px solid var(--ar)}
+.vl{background:var(--rb);color:var(--red);border:1px solid var(--rr)}
+.dims{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.3rem}
+@media(max-width:560px){.dims{grid-template-columns:1fr}}
+.dcard{background:#fff;border:1px solid var(--bdr);border-radius:12px;padding:1.1rem 1.2rem;box-shadow:0 1px 6px rgba(26,58,107,.06)}
+.dnm{font-size:.76rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#1A2535;margin-bottom:.5rem}
+.dbrw{display:flex;align-items:center;gap:.85rem;margin-bottom:.45rem}
+.dtrk{flex:1;height:8px;background:var(--ap);border-radius:4px;overflow:hidden;border:1px solid var(--ab)}
+.dfil{height:100%;border-radius:4px;width:0;transition:width 1.2s ease}
+.dscr{font-size:.92rem;font-weight:700;flex-shrink:0}
+.dnot{font-size:.9rem;color:#5A6E85;line-height:1.5}
+.stit{font-family:'Playfair Display',serif;font-size:1.2rem;color:#0F1923;margin-bottom:1rem}
+.sitm{display:flex;gap:.9rem;align-items:flex-start;padding:.9rem 0;border-bottom:1px solid var(--bdr)}
+.sitm:last-child{border-bottom:none;padding-bottom:0}
+.snum{flex-shrink:0;width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--a1),var(--a2));color:#fff;font-weight:700;font-size:.85rem;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px var(--s4)}
+.sttl{font-size:.97rem;font-weight:700;color:#0F1923;margin-bottom:.22rem}
+.sdet{font-size:.92rem;color:#5A6E85;line-height:1.55}
+.rcard{background:var(--gb);border:1px solid var(--gr);border-radius:14px;padding:1.8rem 2rem;box-shadow:0 2px 10px rgba(26,122,74,.08)}
+.rcard .rl{font-size:.76rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--grn);margin-bottom:.32rem}
+.rcard h3{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--grn);margin-bottom:.8rem}
+.rtxt{background:#fff;border-radius:10px;border:1px solid var(--gr);padding:1.1rem 1.3rem;font-size:.97rem;color:#1A2535;line-height:1.7}
+/* Guide */
+.guide{background:var(--np);border:1px solid var(--nl);border-radius:12px;padding:1.1rem 1.4rem;margin-bottom:1.3rem;font-size:.88rem;line-height:1.8;color:#1A2535}
+.guide strong{color:var(--nm)}
+.gtitle{font-size:.78rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--nm);margin-bottom:.6rem;display:block}
+/* Footer */
+footer{background:var(--navy);text-align:center;padding:1.1rem 1.4rem;font-size:.86rem;color:rgba(255,255,255,.6)}
+footer strong{color:#fff}
+.fi{display:flex;align-items:center;justify-content:center;gap:.9rem;flex-wrap:wrap}
+.fb{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.36);color:#fff;padding:.28rem .85rem;border-radius:20px;cursor:pointer;font-size:.8rem;font-weight:600;font-family:'Inter',sans-serif;text-decoration:none;display:inline-block;transition:background .2s}
+.fb:hover{background:rgba(255,255,255,.26)}
+.fb.fbk{background:rgba(26,122,74,.35);border-color:rgba(168,216,188,.5)}
+.fb.fbk:hover{background:rgba(26,122,74,.55)}
+/* Modal */
+.mov{display:none;position:fixed;inset:0;background:rgba(10,20,40,.75);z-index:999;align-items:center;justify-content:center}
+.mov.on{display:flex}
+.mbox{background:#fff;border-radius:16px;max-width:680px;width:92%;padding:2rem 2.2rem;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.25);max-height:88vh;overflow-y:auto}
+.mcls{position:absolute;top:.9rem;right:1.1rem;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#5A6E85}
+.clbl{font-size:.73rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--nm);margin-bottom:.38rem;margin-top:.75rem;display:block}
+.cblk{background:var(--bg);border:1px solid var(--bdr);border-left:4px solid var(--nm);border-radius:6px;padding:.85rem .95rem;font-size:.86rem;color:#1A2535;line-height:1.7;margin-bottom:.9rem}
+.cpre{background:#0F1923;color:#A8C4E8;border-radius:8px;padding:.9rem;font-size:.78rem;line-height:1.6;overflow-x:auto;white-space:pre-wrap;margin-bottom:.9rem}
+.cnot{background:var(--np);border:1px solid var(--nl);border-radius:8px;padding:.85rem 1rem;font-size:.86rem;color:var(--navy);line-height:1.6}
+/* DARK MODE — single class .dk applied to body */
+/* Each dark theme sets CSS vars including --DT (dark text) and --DS (dark secondary) */
+body.dk{background:var(--bg);color:var(--DT)}
+body.dk header{background:var(--DC)}
+body.dk .htitle{color:var(--DH) !important}
+body.dk .htitle .hs{color:var(--a2);-webkit-text-fill-color:var(--a2);background:none}
+body.dk .hsub{color:var(--DS)}
+body.dk .vbadge{color:var(--a2);border-color:var(--DBR)}
+body.dk .card{background:var(--DC);border-color:var(--DBR)}
+body.dk .slbl{color:var(--DT) !important}
+body.dk textarea{background:var(--BG2);border-color:var(--DBR);color:var(--DT) !important}
+body.dk textarea::placeholder{color:var(--DS)}
+body.dk .chip{background:var(--BG2);border-color:var(--DBR);color:var(--a2)}
+body.dk .fbtn{background:var(--DC);border-color:var(--DBR);color:var(--DS)}
+body.dk .sbtn{background:var(--DC);border-color:var(--DBR);color:var(--DS)}
+body.dk .sbtn.on{background:var(--a2);color:#fff}
+body.dk .sel-display{color:var(--a2)}
+body.dk .guide{background:var(--DC);border-color:var(--DBR);color:var(--DT)}
+body.dk .guide strong{color:var(--a2)}
+body.dk .gtitle{color:var(--a2)}
+body.dk .dcard{background:var(--DC);border-color:var(--DBR)}
+body.dk .dnm{color:var(--DT) !important}
+body.dk .dnot{color:var(--DS) !important}
+body.dk .dtrk{background:var(--BG2);border-color:var(--DBR)}
+body.dk .rcard{background:var(--BG2);border-color:var(--DBR)}
+body.dk .rcard h3{color:var(--a2)}
+body.dk .rcard .rl{color:var(--a2)}
+body.dk .rtxt{background:var(--DC);border-color:var(--DBR);color:var(--DT) !important}
+body.dk .rn{color:var(--DH) !important}
+body.dk .rd{color:var(--DS) !important}
+body.dk .smeta h2{color:var(--DH) !important}
+body.dk .smeta p{color:var(--DS) !important}
+body.dk .stit{color:var(--DH) !important}
+body.dk .sttl{color:var(--DH) !important}
+body.dk .sdet{color:var(--DS) !important}
+body.dk .mbox{background:var(--DC);color:var(--DT)}
+body.dk .cblk{background:var(--BG2);border-color:var(--DBR);color:var(--DT)}
+body.dk .mcls{color:var(--DS)}
+body.dk .bdg{box-shadow:none}
+</style>
+</head>
+<body>
+<div class="tbar">
+  <span class="tlbl">&#127912; Theme</span>
+  <div class="swts" id="SR"></div>
+  <span class="tnm" id="TN"></span>
+</div>
+<div class="abar">
+  <span class="albl">&#128273; Gemini API Key</span>
+  <div class="kwrp">
+    <input type="password" id="KI" placeholder="Paste your key: AIza&#8230;" autocomplete="off" spellcheck="false"/>
+    <button class="eyb" id="EB">&#128065;</button>
+  </div>
+  <span class="ahnt">Free key &rarr; <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a> &nbsp;&middot;&nbsp; Uses gemini-2.5-flash &nbsp;&middot;&nbsp; Key never leaves your browser</span>
+</div>
+<header>
+  <div class="bdg">FIU &middot; KFSCIS &middot; Powered by Google Gemini 2.5 Flash</div>
+  <h1 class="htitle">Assessment <span class="hs">Strength</span> Checker</h1>
+  <p class="hsub">Paste any assignment prompt &mdash; get an instant AI-resistance score and concrete redesign suggestions.</p>
+  <div class="vbadge">Version 2.0</div>
+</header>
+<main>
+  <div class="card">
+    <span class="slbl">Your Assignment Prompt</span>
+    <textarea id="PI" placeholder="e.g. Write a 500-word essay analyzing the causes of the 2008 financial crisis&#8230;"></textarea>
+    <div style="margin-top:1.1rem">
+      <span class="slbl" style="margin-bottom:.45rem">Try an example:</span>
+      <div class="chips" id="CR"></div>
+    </div>
+    <div class="disc-wrap">
+      <span class="slbl" style="margin-bottom:.45rem">Your field (optional &mdash; gives more targeted advice):</span>
+      <div class="field-row" id="FR"></div>
+      <div class="spec-wrap" id="SW">
+        <span class="slbl" style="font-size:.72rem;margin-bottom:.3rem">Select your specialty:</span>
+        <div class="spec-row" id="SR2"></div>
+      </div>
+      <div class="sel-display" id="SD"></div>
+    </div>
+    <div class="ebox" id="EB2"></div>
+    <button class="abtn" id="AB"><div class="spn"></div><span id="BL">&#10022; Analyze My Assignment</span></button>
+  </div>
+  <div id="res">
+    <div class="card hero">
+      <div class="ring">
+        <svg width="118" height="118" viewBox="0 0 118 118">
+          <circle class="rbg" cx="59" cy="59" r="49"/>
+          <circle class="rfil" id="RF" cx="59" cy="59" r="49" stroke-dasharray="308" stroke-dashoffset="308" stroke="#1A7A4A"/>
+        </svg>
+        <div class="rnum"><span class="rn" id="SN">&mdash;</span><span class="rd">/ 10</span></div>
+      </div>
+      <div class="smeta">
+        <div class="vpil" id="VP"></div>
+        <h2 id="ST"></h2>
+        <p id="SS"></p>
+      </div>
+    </div>
+    <div class="guide">
+      <span class="gtitle">&#128161; How to Read Your Results</span>
+      <strong>Score (1&ndash;10):</strong> How easily AI can complete this assignment. 1&nbsp;=&nbsp;instantly. 9&nbsp;=&nbsp;requires genuine student engagement.<br>
+      <strong>Authenticity Required:</strong> Does this demand something only this specific student can provide?<br>
+      <strong>Process Visibility:</strong> Must the student show their thinking, not just a final product?<br>
+      <strong>Specificity to Context:</strong> Is the prompt anchored to a scenario AI cannot access?<br>
+      <strong>Higher-Order Thinking:</strong> Does this require analysis and judgment, or just recall?
+    </div>
+    <div class="dims" id="DG"></div>
+    <div class="card">
+      <h3 class="stit">&#128295; How to Strengthen This Assessment</h3>
+      <div id="SL"></div>
+    </div>
+    <div class="rcard">
+      <div class="rl">&#10022; Redesigned Version</div>
+      <h3>Suggested Rewrite</h3>
+      <div class="rtxt" id="RT"></div>
+    </div>
+  </div>
+</main>
+<div class="mov" id="CM">
+  <div class="mbox">
+    <button class="mcls" id="MC">&#x2715;</button>
+    <span class="clbl" style="margin-top:0">How to Cite This Tool</span>
+    <h2 style="font-family:'Playfair Display',serif;font-size:1.25rem;color:#0F1923;margin-bottom:.9rem;line-height:1.3">Assessment Strength Checker &middot; CC BY 4.0</h2>
+    <span class="clbl">APA 7th Edition</span>
+    <div class="cblk">Bahreini, K. (2026). <em>Assessment Strength Checker: An AI-powered tool for evaluating assignment resistance to generative AI</em> (Version 2.0) [Software]. Knight Foundation School of Computing and Information Sciences, Florida International University. kbahrein&#64;fiu&#46;edu &mdash; https://doi.org/10.5281/zenodo.19043113</div>
+    <span class="clbl">BibTeX</span>
+    <pre class="cpre">@software{bahreini2026asc,
+  author      = {Bahreini, Kiavash},
+  title       = {Assessment Strength Checker},
+  year        = {2026},
+  version     = {2.0},
+  institution = {KFSCIS, Florida International University},
+  email       = {kbahrein@fiu.edu},
+  url         = {https://doi.org/10.5281/zenodo.19043113},
+  license     = {CC BY 4.0}
+}</pre>
+    <span class="clbl">Chicago</span>
+    <div class="cblk" style="margin-bottom:1.1rem">Bahreini, Kiavash. 2026. <em>Assessment Strength Checker</em>. Version 2.0. Software. KFSCIS, Florida International University. https://doi.org/10.5281/zenodo.19043113</div>
+    <div class="cnot"><strong>License:</strong> CC BY 4.0 &mdash; Free to use, share, and adapt with attribution. creativecommons.org/licenses/by/4.0</div>
+  </div>
+</div>
+<footer>
+  <div class="fi">
+    <span><strong>Kiavash Bahreini, Ph.D.</strong> &middot; KFSCIS, FIU &middot; kbahrein&#64;fiu&#46;edu</span>
+    <button class="fb" id="CB">&#128196; How to Cite</button>
+    <a class="fb fbk" href="YOUR_GOOGLE_FORM_LINK_HERE" target="_blank">&#128203; Give Feedback</a>
+    <a class="fb" href="https://github.com/KiavashBahreini7/assessment-strength-checker" target="_blank">&#11088; GitHub</a>
+    <span style="opacity:.55;font-size:.76rem">CC BY 4.0 &middot; v2.0</span>
+  </div>
+</footer>
+<script>
+var T=[
+{id:"gold",      nm:"Navy & Gold",           sw:"#C9951A",dk:false,
+ v:{"--a1":"#B8860B","--a2":"#C9951A","--a3":"#F5C842","--ap":"#FFFBEB","--ab":"#FDE68A","--s2":"rgba(184,134,11,.35)","--s3":"rgba(184,134,11,.45)","--s4":"rgba(184,134,11,.22)","--ag":"rgba(201,149,26,.15)","--bg":"#F7F9FC","--navy":"#1A3A6B","--nm":"#2A52A0","--nl":"#4A7CC9","--np":"#EBF0FA","--bdr":"#D0D9E8"}},
+{id:"burnished", nm:"Burnished Gold",         sw:"#8B6914",dk:false,
+ v:{"--a1":"#8B6914","--a2":"#B8860B","--a3":"#DAA520","--ap":"#FEF9E7","--ab":"#F9D66A","--s2":"rgba(139,105,20,.35)","--s3":"rgba(139,105,20,.45)","--s4":"rgba(139,105,20,.22)","--ag":"rgba(184,134,11,.15)","--bg":"#F7F9FC","--navy":"#1A3A6B","--nm":"#2A52A0","--nl":"#4A7CC9","--np":"#EBF0FA","--bdr":"#D0D9E8"}},
+{id:"ivory",     nm:"Gold & Ivory",           sw:"#D4A017",dk:false,
+ v:{"--a1":"#B8860B","--a2":"#C9951A","--a3":"#F5C842","--ap":"#FDF8EE","--ab":"#F3D98A","--s2":"rgba(184,134,11,.35)","--s3":"rgba(184,134,11,.45)","--s4":"rgba(184,134,11,.22)","--ag":"rgba(201,149,26,.15)","--bg":"#FDF8EE","--navy":"#1A3A6B","--nm":"#2A52A0","--nl":"#4A7CC9","--np":"#FEF9E7","--bdr":"#D0D9E8"}},
+{id:"burgundy",  nm:"Burgundy & Champagne",   sw:"#6B1E3A",dk:false,
+ v:{"--a1":"#6B1E3A","--a2":"#8B2550","--a3":"#D4AF6A","--ap":"#FDF2F8","--ab":"#F9A8D4","--s2":"rgba(107,30,58,.35)","--s3":"rgba(107,30,58,.45)","--s4":"rgba(107,30,58,.22)","--ag":"rgba(139,37,80,.15)","--bg":"#F7F9FC","--navy":"#4A0E28","--nm":"#8B2550","--nl":"#D4AF6A","--np":"#FDF2F8","--bdr":"#D0D9E8"}},
+{id:"forest",    nm:"Forest & Copper",        sw:"#1A5C38",dk:false,
+ v:{"--a1":"#1A5C38","--a2":"#217A49","--a3":"#B5651D","--ap":"#F0FDF4","--ab":"#BBF7D0","--s2":"rgba(26,92,56,.35)","--s3":"rgba(26,92,56,.45)","--s4":"rgba(26,92,56,.22)","--ag":"rgba(33,122,73,.15)","--bg":"#F7F9FC","--navy":"#14532D","--nm":"#217A49","--nl":"#4AAE7A","--np":"#F0FDF4","--bdr":"#D0D9E8"}},
+{id:"sapphire",  nm:"Sapphire & Gold",        sw:"#1E5FA8",dk:false,
+ v:{"--a1":"#1E5FA8","--a2":"#2A7ACC","--a3":"#C9951A","--ap":"#EFF6FF","--ab":"#BFDBFE","--s2":"rgba(30,95,168,.35)","--s3":"rgba(30,95,168,.45)","--s4":"rgba(30,95,168,.22)","--ag":"rgba(42,122,204,.15)","--bg":"#F7F9FC","--navy":"#1E3A6B","--nm":"#2A7ACC","--nl":"#60A5FA","--np":"#EFF6FF","--bdr":"#D0D9E8"}},
+{id:"crimson",   nm:"Crimson & Gold",         sw:"#C0182C",dk:false,
+ v:{"--a1":"#C0182C","--a2":"#E02035","--a3":"#F5C842","--ap":"#FFF1F2","--ab":"#FECDD3","--s2":"rgba(192,24,44,.35)","--s3":"rgba(192,24,44,.45)","--s4":"rgba(192,24,44,.22)","--ag":"rgba(224,32,53,.15)","--bg":"#F7F9FC","--navy":"#7A0D1A","--nm":"#E02035","--nl":"#F87171","--np":"#FFF1F2","--bdr":"#D0D9E8"}},
+{id:"rosegold",  nm:"Steel & Rose Gold",      sw:"#C8956C",dk:false,
+ v:{"--a1":"#A0614A","--a2":"#C8956C","--a3":"#E8B49A","--ap":"#FFF5F0","--ab":"#FDDCCC","--s2":"rgba(160,97,74,.35)","--s3":"rgba(160,97,74,.45)","--s4":"rgba(160,97,74,.22)","--ag":"rgba(200,149,108,.15)","--bg":"#F7F9FC","--navy":"#7A3D28","--nm":"#A0614A","--nl":"#C8956C","--np":"#FFF5F0","--bdr":"#D0D9E8"}},
+{id:"violet",    nm:"Deep Violet",            sw:"#6D28D9",dk:false,
+ v:{"--a1":"#5B21B6","--a2":"#6D28D9","--a3":"#A78BFA","--ap":"#F5F3FF","--ab":"#DDD6FE","--s2":"rgba(109,40,217,.35)","--s3":"rgba(109,40,217,.45)","--s4":"rgba(109,40,217,.22)","--ag":"rgba(124,58,237,.15)","--bg":"#F7F9FC","--navy":"#3B0764","--nm":"#6D28D9","--nl":"#A78BFA","--np":"#F5F3FF","--bdr":"#D0D9E8"}},
+{id:"pink",      nm:"Hot Pink",               sw:"#DB2777",dk:false,
+ v:{"--a1":"#BE185D","--a2":"#DB2777","--a3":"#F472B6","--ap":"#FDF2F8","--ab":"#FBCFE8","--s2":"rgba(219,39,119,.35)","--s3":"rgba(219,39,119,.45)","--s4":"rgba(219,39,119,.22)","--ag":"rgba(236,72,153,.15)","--bg":"#F7F9FC","--navy":"#831843","--nm":"#DB2777","--nl":"#F9A8D4","--np":"#FDF2F8","--bdr":"#D0D9E8"}},
+{id:"teal",      nm:"Deep Teal",              sw:"#0F766E",dk:false,
+ v:{"--a1":"#0D6B64","--a2":"#0F766E","--a3":"#2DD4BF","--ap":"#F0FDFA","--ab":"#99F6E4","--s2":"rgba(15,118,110,.35)","--s3":"rgba(15,118,110,.45)","--s4":"rgba(15,118,110,.22)","--ag":"rgba(20,184,166,.15)","--bg":"#F7F9FC","--navy":"#134E4A","--nm":"#0F766E","--nl":"#2DD4BF","--np":"#F0FDFA","--bdr":"#D0D9E8"}},
+{id:"coral",     nm:"Coral & Navy",           sw:"#EA580C",dk:false,
+ v:{"--a1":"#C2410C","--a2":"#EA580C","--a3":"#FB923C","--ap":"#FFF7ED","--ab":"#FED7AA","--s2":"rgba(234,88,12,.35)","--s3":"rgba(234,88,12,.45)","--s4":"rgba(234,88,12,.22)","--ag":"rgba(249,115,22,.15)","--bg":"#F7F9FC","--navy":"#7C2D12","--nm":"#C2410C","--nl":"#FB923C","--np":"#FFF7ED","--bdr":"#D0D9E8"}},
+{id:"emerald",   nm:"Emerald Green",          sw:"#059669",dk:false,
+ v:{"--a1":"#047857","--a2":"#059669","--a3":"#34D399","--ap":"#ECFDF5","--ab":"#A7F3D0","--s2":"rgba(5,150,105,.35)","--s3":"rgba(5,150,105,.45)","--s4":"rgba(5,150,105,.22)","--ag":"rgba(16,185,129,.15)","--bg":"#F7F9FC","--navy":"#064E3B","--nm":"#059669","--nl":"#34D399","--np":"#ECFDF5","--bdr":"#D0D9E8"}},
+{id:"slate",     nm:"Slate & Amber",          sw:"#475569",dk:false,
+ v:{"--a1":"#334155","--a2":"#475569","--a3":"#D97706","--ap":"#F8FAFC","--ab":"#CBD5E1","--s2":"rgba(71,85,105,.35)","--s3":"rgba(71,85,105,.45)","--s4":"rgba(71,85,105,.22)","--ag":"rgba(100,116,139,.15)","--bg":"#F1F5F9","--navy":"#1E293B","--nm":"#475569","--nl":"#94A3B8","--np":"#F1F5F9","--bdr":"#CBD5E1"}},
+{id:"aurora",    nm:"Aurora",                 sw:"#9B6EC4",dk:false,
+ v:{"--a1":"#7B4BAB","--a2":"#C2407A","--a3":"#F472B6","--ap":"#FDF2F8","--ab":"#F9C8E8","--s2":"rgba(194,64,122,.35)","--s3":"rgba(194,64,122,.45)","--s4":"rgba(194,64,122,.22)","--ag":"rgba(155,110,196,.18)","--bg":"#F5F0FA","--navy":"#3A2A7A","--nm":"#7B4BAB","--nl":"#C2407A","--np":"#F0E8FF","--bdr":"#D0D9E8"}},
+{id:"ocean",     nm:"Ocean Breeze",           sw:"#0284C7",dk:false,
+ v:{"--a1":"#0369A1","--a2":"#0284C7","--a3":"#38BDF8","--ap":"#F0F9FF","--ab":"#BAE6FD","--s2":"rgba(2,132,199,.35)","--s3":"rgba(2,132,199,.45)","--s4":"rgba(2,132,199,.22)","--ag":"rgba(56,189,248,.15)","--bg":"#F0F9FF","--navy":"#0C4A6E","--nm":"#0284C7","--nl":"#38BDF8","--np":"#E0F2FE","--bdr":"#BAE6FD"}},
+{id:"terracotta",nm:"Terracotta & Sage",      sw:"#B45309",dk:false,
+ v:{"--a1":"#92400E","--a2":"#B45309","--a3":"#84A98C","--ap":"#FEF3C7","--ab":"#FDE68A","--s2":"rgba(180,83,9,.35)","--s3":"rgba(180,83,9,.45)","--s4":"rgba(180,83,9,.22)","--ag":"rgba(180,83,9,.15)","--bg":"#FAFAF5","--navy":"#451A03","--nm":"#92400E","--nl":"#B45309","--np":"#FEF3C7","--bdr":"#D6D3C0"}},
+{id:"lavender",  nm:"Lavender Mist",          sw:"#7C3AED",dk:false,
+ v:{"--a1":"#6D28D9","--a2":"#7C3AED","--a3":"#C4B5FD","--ap":"#F5F3FF","--ab":"#EDE9FE","--s2":"rgba(124,58,237,.35)","--s3":"rgba(124,58,237,.45)","--s4":"rgba(124,58,237,.22)","--ag":"rgba(196,181,253,.3)","--bg":"#FAF9FF","--navy":"#4C1D95","--nm":"#7C3AED","--nl":"#A78BFA","--np":"#F5F3FF","--bdr":"#DDD6FE"}},
+{id:"neon",      nm:"Neon Cyber",             sw:"#06B6D4",dk:false,
+ v:{"--a1":"#0891B2","--a2":"#06B6D4","--a3":"#A3E635","--ap":"#ECFEFF","--ab":"#A5F3FC","--s2":"rgba(6,182,212,.35)","--s3":"rgba(6,182,212,.45)","--s4":"rgba(6,182,212,.22)","--ag":"rgba(6,182,212,.15)","--bg":"#F0FEFF","--navy":"#164E63","--nm":"#0891B2","--nl":"#06B6D4","--np":"#ECFEFF","--bdr":"#A5F3FC"}},
+{id:"dusty",     nm:"Dusty Rose & Sage",      sw:"#9F7C8B",dk:false,
+ v:{"--a1":"#7D5A6A","--a2":"#9F7C8B","--a3":"#7FAF8C","--ap":"#FDF4F6","--ab":"#F0D5DD","--s2":"rgba(159,124,139,.35)","--s3":"rgba(159,124,139,.45)","--s4":"rgba(159,124,139,.22)","--ag":"rgba(159,124,139,.15)","--bg":"#FAF6F7","--navy":"#4A2535","--nm":"#7D5A6A","--nl":"#9F7C8B","--np":"#FDF4F6","--bdr":"#E8D0D8"}},
+{id:"dkocean",   nm:"Dark \u2014 Ocean",      sw:"#1E293B",dk:true,
+ v:{"--a1":"#38BDF8","--a2":"#0EA5E9","--a3":"#7DD3FC","--ap":"#ECFEFF","--ab":"#BAE6FD","--s2":"rgba(56,189,248,.35)","--s3":"rgba(56,189,248,.45)","--s4":"rgba(56,189,248,.22)","--ag":"rgba(14,165,233,.2)","--bg":"#0F172A","--navy":"#1E293B","--nm":"#38BDF8","--nl":"#0EA5E9","--np":"#1E3A5F","--bdr":"#334155",
+   "--DT":"#E2E8F0","--DS":"#94A3B8","--DH":"#F1F5F9","--DC":"#1E293B","--BG2":"#0F172A","--DBR":"#334155"}},
+{id:"dkmid",     nm:"Dark \u2014 Midnight",   sw:"#312E81",dk:true,
+ v:{"--a1":"#A78BFA","--a2":"#7C3AED","--a3":"#C4B5FD","--ap":"#EDE9FE","--ab":"#DDD6FE","--s2":"rgba(167,139,250,.35)","--s3":"rgba(167,139,250,.45)","--s4":"rgba(167,139,250,.22)","--ag":"rgba(124,58,237,.2)","--bg":"#0A0A1A","--navy":"#111128","--nm":"#A78BFA","--nl":"#7C3AED","--np":"#1A1A3A","--bdr":"#2A2A4A",
+   "--DT":"#C9D1E8","--DS":"#7A7A9A","--DH":"#E8EAFF","--DC":"#111128","--BG2":"#0A0A1A","--DBR":"#2A2A4A"}},
+{id:"dkforest",  nm:"Dark \u2014 Forest Night",sw:"#052E16",dk:true,
+ v:{"--a1":"#4ADE80","--a2":"#22C55E","--a3":"#86EFAC","--ap":"#ECFDF5","--ab":"#A7F3D0","--s2":"rgba(34,197,94,.35)","--s3":"rgba(34,197,94,.45)","--s4":"rgba(34,197,94,.22)","--ag":"rgba(74,222,128,.2)","--bg":"#021A0C","--navy":"#052E16","--nm":"#4ADE80","--nl":"#22C55E","--np":"#063A18","--bdr":"#14532D",
+   "--DT":"#DCFCE7","--DS":"#86EFAC","--DH":"#F0FDF4","--DC":"#052E16","--BG2":"#021A0C","--DBR":"#14532D"}},
+{id:"dkember",   nm:"Dark \u2014 Ember",      sw:"#431407",dk:true,
+ v:{"--a1":"#FB923C","--a2":"#F97316","--a3":"#FCD34D","--ap":"#FFF7ED","--ab":"#FED7AA","--s2":"rgba(249,115,22,.35)","--s3":"rgba(249,115,22,.45)","--s4":"rgba(249,115,22,.22)","--ag":"rgba(251,146,60,.2)","--bg":"#1C0A00","--navy":"#431407","--nm":"#FB923C","--nl":"#F97316","--np":"#3A1A00","--bdr":"#7C2D12",
+   "--DT":"#FFEDD5","--DS":"#FED7AA","--DH":"#FFF7ED","--DC":"#431407","--BG2":"#1C0A00","--DBR":"#7C2D12"}}
+];
+var EX=[
+{lbl:"CS",txt:"Design a scheduling system for a clinic with 12 doctors. Identify 3 data structures, walk through conflict detection, reflect on a design trade-off, identify one privacy risk. Defend your proposal in a live 10-minute Q&A."},
+{lbl:"Nursing",txt:"Identify a moment from your clinical placement where a communication breakdown affected patient care. Analyze factors, connect to a course framework, and propose one protocol change. Discuss with your clinical instructor."},
+{lbl:"Business",txt:"Visit a locally owned business you have patronized in the last 30 days. Analyze one marketing or operational decision using two course frameworks. Propose a 90-day plan under $2,000. Present in class and answer objections."},
+{lbl:"Education",txt:"Identify a student from your practicum whose needs are unmet. Design a 3-session evidence-based intervention, implement one session, document observations, and revise your plan. Submit original plan, session notes, and revised plan with rationale."},
+{lbl:"Law",txt:"Attend a live court proceeding or public hearing. Identify one tension between legal procedure and justice. Analyze using two theoretical frameworks. Write a 700-word reflection. Discuss in a 10-minute oral examination with your professor."},
+{lbl:"Psychology",txt:"Keep a 2-week daily log applying one course concept to something you personally observed each day. Select 3 surprising entries and write a 600-word analysis of what the surprise revealed about the gap between knowing and seeing the concept."},
+{lbl:"Architecture",txt:"Walk through a neighborhood undergoing visible change. Identify a building where a design decision had measurable social impact. Analyze using two course frameworks. Propose a design intervention and defend every choice to a panel of classmates."},
+{lbl:"Arts",txt:"Visit a cultural institution you have never been to. Choose one work that provoked a strong reaction. Write a 700-word critical response tracing your reaction to your cultural background and course frameworks. Include one moment where you caught an assumption."}
+];
+var F={
+"Agriculture & Environment":["Agriculture - General","Agronomy","Animal Science","Aquaculture","Atmospheric Science","Climate Science","Conservation Biology","Ecology","Environmental Policy","Environmental Science","Food Technology","Forestry","Horticulture","Oceanography","Soil Science","Sustainability Studies","Veterinary Medicine","Veterinary Technology","Wildlife Management"],
+"Allied Health Sciences":["Art Therapy","Athletic Training","Clinical Laboratory Science","Cytotechnology","Diagnostic Medical Sonography","Health Information Management","Music Therapy","Nuclear Medicine Technology","Occupational Therapy","Orthotics & Prosthetics","Perfusion Technology","Physical Therapy","Radiologic Technology","Recreation Therapy","Respiratory Therapy","Speech & Language Pathology"],
+"Architecture & Design":["Architecture - General","Fashion Design","Historic Preservation","Industrial Design","Interior Design","Landscape Architecture","Product Design","Sustainable Design","Urban Design","Urban Planning"],
+"Arts & Humanities":["Animation & Digital Arts","Art History","Creative Writing - Fiction","Creative Writing - Poetry","Creative Writing - Screenwriting","Cultural Studies","Dance","Film Studies","Fine Arts - Painting","Fine Arts - Photography","Fine Arts - Sculpture","Gender & Women's Studies","Graphic Design","History - American","History - Ancient","History - Modern","History - World","Linguistics","Literature - American","Literature - Comparative","Literature - English","Literature - World","Music - History","Music - Performance","Music - Theory & Composition","Philosophy - Ethics","Philosophy - General","Philosophy - Logic","Religious Studies","Theater & Performing Arts"],
+"Business & Management":["Accounting","Auditing","Behavioral Economics","Business Administration","Business Analytics","Corporate Finance","Digital Marketing","Entrepreneurship & Innovation","Finance","Healthcare Management","Human Resource Management","International Business","Investment Management","Macroeconomics","Management","Managerial Accounting","Marketing","Microeconomics","Nonprofit Management","Operations Management","Organizational Behavior","Project Management","Real Estate","Sports Management","Strategic Management","Supply Chain & Logistics","Tax Accounting"],
+"Communication & Media":["Advertising","Broadcast Journalism","Corporate Communication","Digital & Social Media","Digital Journalism","Film & Television Production","Health Communication","Journalism","Media Studies","Print Journalism","Public Relations","Radio Broadcasting","Science Communication","Strategic Communication"],
+"Computer Science":["Algorithms & Theory","Artificial Intelligence & Machine Learning","Bioinformatics","Cloud Computing","Computer Graphics","Computer Networks","Computer Science - General","Cybersecurity","Data Science & Analytics","Database Systems","Distributed Systems","Game Development","Human-Computer Interaction","Mobile Computing","Operating Systems","Programming Languages","Quantum Computing","Software Engineering"],
+"Counseling":["Career Counseling","Grief & Trauma Counseling","Marriage & Family Therapy","Mental Health Counseling","Rehabilitation Counseling","School Counseling","Substance Abuse Counseling"],
+"Dental Medicine":["Dental Hygiene","Dental Public Health","Endodontics","General Dentistry","Oral Surgery","Orthodontics","Pediatric Dentistry","Periodontics","Prosthodontics"],
+"Education":["Adult & Continuing Education","Art Education","Bilingual Education","Curriculum & Instruction Design","Early Childhood Education","Educational Leadership & Administration","Educational Psychology","Educational Technology & Instructional Design","Elementary Education","Higher Education & College Teaching","Library & Information Science","Music Education","Physical Education & Kinesiology","Secondary Ed - English","Secondary Ed - Foreign Language","Secondary Ed - General","Secondary Ed - Mathematics","Secondary Ed - Science","Secondary Ed - Social Studies","Special Ed - Autism Spectrum","Special Ed - General","Special Ed - Gifted Education","Special Ed - Learning Disabilities","TESOL & ESL Teaching"],
+"Engineering - Biomedical":["Biomaterials","Biomedical Engineering - General","Clinical Engineering","Imaging Systems","Medical Devices","Neural Engineering","Rehabilitation Engineering","Tissue Engineering"],
+"Engineering - Chemical":["Biochemical Engineering","Chemical Engineering - General","Environmental Chemical Engineering","Materials Engineering","Petroleum Engineering","Polymer Science","Process Engineering","Reaction Engineering"],
+"Engineering - Civil":["Civil Engineering - General","Construction Management","Environmental Engineering","Geotechnical Engineering","Structural Engineering","Transportation Engineering","Urban Infrastructure","Water Resources"],
+"Engineering - Electrical":["Control Systems","Electrical Engineering - General","Electronics","Embedded Systems","Microelectronics","Photonics","Power Systems","RF & Wireless","Signal Processing","Telecommunications"],
+"Engineering - Industrial":["Ergonomics & Human Factors","Industrial Engineering - General","Lean Manufacturing","Operations Research","Quality Engineering","Safety Engineering","Supply Chain Engineering","Systems Engineering"],
+"Engineering - Mechanical":["Aerospace Engineering","Automotive Engineering","Biomechanics","Fluid Mechanics","HVAC","Manufacturing","Materials Science","Mechanical Engineering - General","Robotics & Automation","Thermodynamics"],
+"Hospitality & Tourism":["Convention & Meeting Planning","Cruise & Travel Management","Ecotourism","Event Management","Hotel Management","Restaurant & Food Service Management","Theme Park Management","Tourism Management"],
+"Information Technology":["Database Administration","Digital Transformation","ERP Systems","Information Systems","Information Technology - General","IT Management","IT Project Management","IT Security","Network Administration","Systems Analysis","Web Development"],
+"Law":["Administrative Law","Bankruptcy Law","Civil Law","Constitutional Law","Corporate & Business Law","Criminal Law","Cyber Law","Environmental Law","Family Law","Health Law","Human Rights Law","Immigration Law","Intellectual Property Law","International Law","Labor & Employment Law","Law - General","Maritime Law","Paralegal Studies","Public Policy & Administration","Real Estate Law","Tax Law"],
+"Mathematics & Statistics":["Actuarial Science","Algebra","Applied Mathematics","Calculus & Analysis","Discrete Mathematics","Mathematical Modeling","Numerical Analysis","Pure Mathematics","Statistics","Topology"],
+"Medicine":["Anesthesiology","Cardiology","Dermatology","Emergency Medicine","Endocrinology","Gastroenterology","General Practice","Geriatrics","Infectious Disease","Internal Medicine","Medical Education","Nephrology","Neurology","Obstetrics & Gynecology","Oncology","Ophthalmology","Pathology","Pediatrics","Psychiatry","Pulmonology","Radiology","Surgery - Cardiothoracic","Surgery - General","Surgery - Neurosurgery","Surgery - Orthopedic"],
+"Natural Sciences":["Analytical Chemistry","Astrophysics","Atmospheric Science","Biochemistry","Biology - General","Botany","Cell Biology","Chemistry - General","Ecology","Environmental Science","Evolutionary Biology","Genetics","Geology","Immunology","Inorganic Chemistry","Marine Biology","Microbiology","Molecular Biology","Neuroscience","Oceanography","Organic Chemistry","Physical Chemistry","Physics - General","Quantum Physics","Zoology"],
+"Nursing":["Nurse Anesthesia","Nurse Practitioner","Nursing - Community & Public Health","Nursing - Emergency & Trauma","Nursing - Forensic","Nursing - General","Nursing - Gerontology","Nursing - ICU & Critical Care","Nursing - Informatics","Nursing - Midwifery & Obstetrics","Nursing - Neonatal","Nursing - Oncology","Nursing - Pediatric","Nursing - Perioperative","Nursing - Psychiatric & Mental Health","Nursing - Rehabilitation","Nursing - School Nursing","Nursing Education & Leadership"],
+"Nutrition & Dietetics":["Clinical Dietetics","Community Nutrition","Eating Disorders","Food Science","Food Systems & Sustainability","Pediatric Nutrition","Sports Nutrition"],
+"Pharmacy":["Clinical Pharmacy","Pharmaceutical Sciences","Pharmacology","Pharmacy - Community","Pharmacy - General","Pharmacy - Geriatric","Pharmacy - Hospital","Pharmacy - Oncology","Pharmacy - Pediatric","Pharmacy Administration"],
+"Political Science":["Comparative Politics","Diplomacy","Electoral Studies","Foreign Policy","Human Rights","International Relations","Political Science","Political Theory","Public Administration","Security Studies"],
+"Psychology":["Behavior Analysis","Neuropsychology","Psychology - Clinical","Psychology - Cognitive","Psychology - Counseling","Psychology - Developmental","Psychology - Educational","Psychology - Experimental","Psychology - Forensic","Psychology - General","Psychology - Health","Psychology - Industrial & Organizational","Psychology - Social","Psychology - Sports","Psychotherapy","School Psychology"],
+"Public Health":["Biostatistics","Community Health Education","Environmental Health","Epidemiology","Global Health","Health Policy & Management","Health Promotion","Maternal & Child Health","Occupational Health & Safety","Social & Behavioral Health"],
+"Social Sciences - Other":["African Studies","Disability Studies","European Studies","Futures Studies","Human Rights Studies","Labor Studies","Latin American Studies","Peace & Conflict Studies","Queer Studies","Urban Studies","Women's & Gender Studies"],
+"Social Work":["Addictions & Substance Abuse","Child Welfare","Clinical Social Work","Community Organizing","Gerontological Social Work","Medical Social Work","Mental Health Social Work","Policy & Advocacy","School Social Work","Social Work - General"],
+"Sociology & Anthropology":["Archaeology","Criminology","Cultural Anthropology","Demography","Medical Anthropology","Physical Anthropology","Race & Ethnic Studies","Rural Sociology","Sociology","Urban Sociology"]
+};
+var selField="",selSpec="";
+
+function applyTheme(id){
+  var t=null;
+  for(var i=0;i<T.length;i++){if(T[i].id===id){t=T[i];break;}}
+  if(!t)return;
+  var r=document.documentElement;
+  var keys=Object.keys(t.v);
+  for(var k=0;k<keys.length;k++){r.style.setProperty(keys[k],t.v[keys[k]]);}
+  var sw=document.querySelectorAll(".swt");
+  for(var s=0;s<sw.length;s++){sw[s].classList.toggle("on",sw[s].getAttribute("data-id")===id);}
+  document.getElementById("TN").textContent=t.nm;
+  if(t.dk){document.body.classList.add("dk");}
+  else{document.body.classList.remove("dk");}
+  try{localStorage.setItem("asc-t",id);}catch(e){}
+}
+
+function updateDisplay(){
+  var d=document.getElementById("SD");
+  if(selSpec){d.textContent="Selected: "+selField+" \u2192 "+selSpec;}
+  else if(selField){d.textContent="Selected: "+selField+" (choose a specialty below)";}
+  else{d.textContent="";}
+}
+
+function buildSpecs(fname){
+  var sr2=document.getElementById("SR2");
+  sr2.innerHTML="";
+  var specs=F[fname]||[];
+  for(var si=0;si<specs.length;si++){
+    (function(sp){
+      var el=document.createElement("div");
+      el.className="sbtn";el.textContent=sp;
+      el.onclick=function(){
+        var all=document.querySelectorAll(".sbtn");
+        for(var b=0;b<all.length;b++){all[b].classList.remove("on");}
+        if(selSpec===sp){selSpec="";}
+        else{selSpec=sp;el.classList.add("on");}
+        updateDisplay();
+      };
+      sr2.appendChild(el);
+    })(specs[si]);
+  }
+}
+
+function buildUI(){
+  var sr=document.getElementById("SR");
+  for(var ti=0;ti<T.length;ti++){
+    (function(th){
+      var s=document.createElement("div");
+      s.className="swt";s.setAttribute("data-id",th.id);s.title=th.nm;s.style.background=th.sw;
+      s.onclick=function(){applyTheme(th.id);};
+      sr.appendChild(s);
+    })(T[ti]);
+  }
+  var saved="gold";
+  try{var ls=localStorage.getItem("asc-t");if(ls)saved=ls;}catch(e){}
+  applyTheme(saved);
+  var cr=document.getElementById("CR");
+  for(var ei=0;ei<EX.length;ei++){
+    (function(ex){
+      var el=document.createElement("div");
+      el.className="chip";el.textContent=ex.lbl;el.title=ex.txt;
+      el.onclick=function(){document.getElementById("PI").value=ex.txt;};
+      cr.appendChild(el);
+    })(EX[ei]);
+  }
+  var fr=document.getElementById("FR");
+  var fnames=Object.keys(F);
+  for(var fi=0;fi<fnames.length;fi++){
+    (function(fname){
+      var el=document.createElement("div");
+      el.className="fbtn";el.textContent=fname;
+      el.onclick=function(){
+        if(selField===fname){
+          selField="";selSpec="";el.classList.remove("on");
+          document.getElementById("SW").classList.remove("show");
+          document.getElementById("SR2").innerHTML="";
+        }else{
+          var all=document.querySelectorAll(".fbtn");
+          for(var b=0;b<all.length;b++){all[b].classList.remove("on");}
+          selField=fname;selSpec="";el.classList.add("on");
+          buildSpecs(fname);
+          document.getElementById("SW").classList.add("show");
+        }
+        updateDisplay();
+      };
+      fr.appendChild(el);
+    })(fnames[fi]);
+  }
+  document.getElementById("EB").onclick=function(){var i=document.getElementById("KI");i.type=i.type==="password"?"text":"password";};
+  document.getElementById("CB").onclick=function(){document.getElementById("CM").classList.add("on");};
+  document.getElementById("MC").onclick=function(){document.getElementById("CM").classList.remove("on");};
+  document.getElementById("CM").onclick=function(e){if(e.target===this)this.classList.remove("on");};
+  document.getElementById("PI").onkeydown=function(e){if(e.key==="Enter"&&(e.ctrlKey||e.metaKey))analyze();};
+  document.getElementById("AB").onclick=analyze;
+}
+
+if(document.readyState==="loading"){
+  document.addEventListener("DOMContentLoaded",buildUI);
+}else{buildUI();}
+
+function scoreColor(s){return s>=7?"#1A7A4A":s>=4?"#B07000":"#C0282E";}
+function showErr(m){var e=document.getElementById("EB2");e.textContent=m;e.classList.add("on");}
+function hideErr(){document.getElementById("EB2").classList.remove("on");}
+
+var SCHEMA={type:"object",properties:{score:{type:"integer"},title:{type:"string"},summary:{type:"string"},verdict:{type:"string",enum:["high","medium","low"]},dimensions:{type:"array",items:{type:"object",properties:{label:{type:"string"},score:{type:"integer"},note:{type:"string"}},required:["label","score","note"]}},suggestions:{type:"array",items:{type:"object",properties:{title:{type:"string"},detail:{type:"string"}},required:["title","detail"]}},redesign:{type:"string"}},required:["score","title","summary","verdict","dimensions","suggestions","redesign"]};
+
+async function analyze(){
+  var key=document.getElementById("KI").value.trim();
+  var prm=document.getElementById("PI").value.trim();
+  hideErr();
+  if(!key){showErr("Please paste your Gemini API key in the blue banner at the top.");return;}
+  if(!prm){showErr("Please enter an assignment prompt before analyzing.");return;}
+  var btn=document.getElementById("AB"),lbl=document.getElementById("BL");
+  btn.disabled=true;btn.classList.add("ld");lbl.textContent="Analyzing with Gemini\u2026";
+  document.getElementById("res").classList.remove("on");
+  var dc="";
+  if(selSpec){dc="The faculty member teaches "+selSpec+" within the field of "+selField+".";}
+  else if(selField){dc="The faculty member teaches in the field of "+selField+".";}
+  var sys="You are an expert in higher education assessment design and AI literacy. Analyze a university assignment prompt for AI-resistance against Google Gemini. Be concise: summary under 40 words, each note under 25 words, each suggestion detail under 35 words, redesign under 70 words. Dimension labels must be exactly: Authenticity Required, Process Visibility, Specificity to Context, Higher-Order Thinking. Provide exactly 4 dimensions and exactly 3 suggestions. Score must be an integer between 1 and 10 only.";
+  try{
+    var resp=await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key="+encodeURIComponent(key),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:[{role:"user",parts:[{text:"Assignment prompt: \""+prm+"\"\n\n"+dc}]}],generationConfig:{responseMimeType:"application/json",responseSchema:SCHEMA,temperature:0.3,maxOutputTokens:4096}})});
+    if(!resp.ok){var eb=await resp.json().catch(function(){return{};});throw new Error(eb&&eb.error&&eb.error.message?eb.error.message:"HTTP "+resp.status);}
+    var data=await resp.json();
+    var cand=data&&data.candidates&&data.candidates[0];
+    if(!cand)throw new Error("No response from Gemini. Please try again.");
+    if(cand.finishReason==="SAFETY")throw new Error("Blocked by safety filters.");
+    var raw=(cand.content&&cand.content.parts&&cand.content.parts[0]&&cand.content.parts[0].text||"").trim();
+    if(!raw)throw new Error("Empty response. Please try again.");
+    var result;
+    try{result=JSON.parse(raw);}
+    catch(e1){var s2=raw.replace(/^```(?:json)?\s*/im,"").replace(/```[\s\S]*$/m,"").trim();try{result=JSON.parse(s2);}catch(e2){result=JSON.parse(repair(s2));}}
+    render(result);
+  }catch(err){showErr("\u274C "+err.message);console.error(err);}
+  finally{btn.disabled=false;btn.classList.remove("ld");lbl.textContent="\u2726 Analyze My Assignment";}
+}
+
+function repair(s){
+  var inS=false,esc=false,stk=[];
+  for(var i=0;i<s.length;i++){var c=s[i];if(esc){esc=false;continue;}if(c==="\\"){if(inS)esc=true;continue;}if(c==='"'){inS=!inS;continue;}if(inS)continue;if(c==="{"||c==="[")stk.push(c==="{"?"}":"]");else if(c==="}"||c==="]")stk.pop();}
+  var r=s;if(inS)r+='"';while(stk.length)r+=stk.pop();return r;
+}
+
+function render(r){
+  var sc=typeof r.score==="number"?r.score:5;
+  if(sc>10)sc=Math.round(sc/10);if(sc>10)sc=10;if(sc<1)sc=1;
+  if(r.dimensions&&r.dimensions.length>0){
+    var tot=0;
+    for(var i=0;i<r.dimensions.length;i++){var ds=typeof r.dimensions[i].score==="number"?r.dimensions[i].score:5;if(ds>10)ds=Math.round(ds/10);if(ds>10)ds=10;if(ds<1)ds=1;tot+=ds;}
+    var avg=Math.round(tot/r.dimensions.length);if(avg-sc>2)sc=avg;
+  }
+  r.score=sc;
+  var circ=308;
+  var ring=document.getElementById("RF");
+  ring.setAttribute("stroke",scoreColor(sc));ring.setAttribute("stroke-dashoffset",circ);
+  setTimeout(function(){ring.setAttribute("stroke-dashoffset",circ-(sc/10)*circ);},60);
+  document.getElementById("SN").textContent=sc;
+  var vmap={high:"\u2713 High AI-Resistance",medium:"\u26A0 Moderate Vulnerability",low:"\u2717 High AI-Vulnerability"};
+  var vcls={high:"vh",medium:"vm",low:"vl"};
+  var vp=document.getElementById("VP");vp.className="vpil "+(vcls[r.verdict]||"vm");vp.textContent=vmap[r.verdict]||"Assessed";
+  document.getElementById("ST").textContent=r.title||"";document.getElementById("SS").textContent=r.summary||"";
+  var dg=document.getElementById("DG");dg.innerHTML="";
+  var dims=r.dimensions||[];
+  for(var d=0;d<dims.length;d++){
+    var dim=dims[d];var ds2=typeof dim.score==="number"?dim.score:5;if(ds2>10)ds2=Math.round(ds2/10);if(ds2>10)ds2=10;if(ds2<1)ds2=1;
+    var card=document.createElement("div");card.className="dcard";
+    var nm=document.createElement("div");nm.className="dnm";nm.textContent=dim.label||"";
+    var fil=document.createElement("div");fil.className="dfil";fil.setAttribute("data-w",ds2*10);fil.style.background=scoreColor(ds2);
+    var trk=document.createElement("div");trk.className="dtrk";trk.appendChild(fil);
+    var sc2=document.createElement("span");sc2.className="dscr";sc2.style.color=scoreColor(ds2);sc2.textContent=ds2+"/10";
+    var br=document.createElement("div");br.className="dbrw";br.appendChild(trk);br.appendChild(sc2);
+    var nt=document.createElement("div");nt.className="dnot";nt.textContent=dim.note||"";
+    card.appendChild(nm);card.appendChild(br);card.appendChild(nt);dg.appendChild(card);
+  }
+  requestAnimationFrame(function(){setTimeout(function(){var fills=document.querySelectorAll(".dfil");for(var f=0;f<fills.length;f++){fills[f].style.width=fills[f].getAttribute("data-w")+"%";}},80);});
+  var sl=document.getElementById("SL");sl.innerHTML="";
+  var suggs=r.suggestions||[];
+  for(var si=0;si<suggs.length;si++){
+    var sug=suggs[si];
+    var num=document.createElement("div");num.className="snum";num.textContent=si+1;
+    var ttl=document.createElement("div");ttl.className="sttl";ttl.textContent=sug.title||"";
+    var det=document.createElement("div");det.className="sdet";det.textContent=sug.detail||"";
+    var body=document.createElement("div");body.appendChild(ttl);body.appendChild(det);
+    var itm=document.createElement("div");itm.className="sitm";itm.appendChild(num);itm.appendChild(body);sl.appendChild(itm);
+  }
+  document.getElementById("RT").textContent=r.redesign||"";
+  var res=document.getElementById("res");res.classList.add("on");
+  setTimeout(function(){res.scrollIntoView({behavior:"smooth",block:"start"});},80);
+}
+</script>
+</body>
+</html>
