@@ -246,6 +246,10 @@ Bahreini, Kiavash. 2026. Assessment Strength Checker. Version 1.0. Software. Kni
 
 ---
 
+## Disclaimer
+
+This software is provided "as is", without warranty of any kind. This tool relies on third-party AI services (Google Gemini API) which are subject to their own terms of service and availability. The author makes no guarantees regarding the accuracy or reliability of AI-generated responses. Users are responsible for verifying all information provided by the tool.
+
 ## License
 
 This tool is released under the Creative Commons Attribution 4.0 International license CC BY 4.0. You can use, share, and adapt for any purpose, including commercial use, as long as you give appropriate credit using the citation format above. Full license text at https://creativecommons.org/licenses/by/4.0/
